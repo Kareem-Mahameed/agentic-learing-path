@@ -7,6 +7,8 @@ Over 12 weeks, build and deploy a reliable AI research and task assistant that c
 - Understand a user's goal
 - Plan multi-step work
 - Select and use tools
+- Connect to local and remote Model Context Protocol (MCP) servers
+- Expose custom tools and resources through an MCP server
 - Observe results and recover from errors
 - Search documents and retain appropriate memory
 - Request approval before consequential actions
@@ -36,15 +38,35 @@ Over 12 weeks, build and deploy a reliable AI research and task assistant that c
 | 2 | APIs, JSON, files, and async Python | 10 | Task manager persisted to JSON and connected to an API |
 | 3 | LLM application fundamentals | 7 | Model-powered command-line assistant |
 | 4 | Tool calling | 9 | Assistant with at least three validated tools |
-| 5 | Agent loop | 10 | Multi-step research agent |
-| 6 | State and retrieval | 10 | Document-aware agent |
+| 5 | Agent loop and MCP fundamentals | 10 | Multi-step agent and local MCP server |
+| 6 | State, retrieval, and MCP integration | 10 | Document-aware agent using an MCP server |
 | 7 | Long-term memory | 8 | Preference-aware agent |
 | 8 | Planning and workflows | 9 | Structured research workflow |
-| 9 | Evaluations and reliability | 10 | Automated evaluation suite |
-| 10 | Agent framework or SDK | 8 | Framework-based rebuild |
+| 9 | Evaluations and reliability | 10 | Automated agent and MCP evaluation suite |
+| 10 | Agent framework, SDK, and production MCP | 8 | Framework-based agent using multiple MCP servers |
 | 11 | Multi-agent patterns | 9 | Researcher, fact-checker, and writer system |
 | 12 | Deployment | 12 | Usable web application or API |
 | **Total** |  | **112** | **Deployed agent** |
+
+## MCP progression
+
+MCP is introduced only after direct tool calling so that the protocol does not hide the underlying agent mechanics.
+
+```text
+Week 4: Direct function tools
+    ↓
+Week 5: MCP architecture and a local server
+    ↓
+Week 6: Agent acting as an MCP client
+    ↓
+Week 9: MCP reliability and security evaluations
+    ↓
+Week 10: Multiple local or remote MCP servers
+    ↓
+Week 12: Deploy and monitor an MCP-enabled agent
+```
+
+By the end, the agent will be able to discover server capabilities, invoke MCP tools, read MCP resources, handle unavailable servers, and request approval before consequential operations.
 
 ## Week 1: Python fundamentals
 
@@ -130,7 +152,7 @@ get_current_time()
 
 The model selects an appropriate tool, your application executes it, and the model uses the result correctly.
 
-## Week 5: The agent loop
+## Week 5: The agent loop and MCP fundamentals
 
 ### Learn
 
@@ -141,6 +163,11 @@ The model selects an appropriate tool, your application executes it, and the mod
 - Retry and error-recovery strategies
 - Human approval checkpoints
 - Preventing infinite loops
+- The MCP host, client, and server roles
+- MCP capabilities: tools, resources, and prompts
+- Capability discovery and negotiation
+- The difference between direct function calling and MCP
+- Inspecting and testing a local MCP server
 
 ### Core loop
 
@@ -160,13 +187,13 @@ Continue or finish
 
 ### Build
 
-Create an agent that completes a research task through several tool calls.
+Create an agent that completes a research task through several tool calls. Then build a small local MCP server that exposes `search_notes` and `save_note` as tools.
 
 ### Completion checkpoint
 
-The agent can finish a multi-step task without you manually selecting each action.
+The agent can finish a multi-step task without you manually selecting each action, and the local MCP server can be inspected and called independently.
 
-## Week 6: State and retrieval
+## Week 6: State, retrieval, and MCP integration
 
 ### Learn
 
@@ -176,14 +203,18 @@ The agent can finish a multi-step task without you manually selecting each actio
 - Document chunking
 - Retrieval-augmented generation
 - Vector stores and metadata filters
+- Connecting an agent to an MCP server as a client
+- Discovering tools and resources at runtime
+- Mapping MCP results into agent observations
+- Handling MCP timeouts, invalid responses, and unavailable servers
 
 ### Build
 
-Let the agent index and search a small collection of your own documents.
+Let the agent index and search a small collection of your own documents. Expose the collection as an MCP resource and connect the research agent to the Week 5 MCP server.
 
 ### Completion checkpoint
 
-The agent retrieves relevant passages and bases its response on those passages.
+The agent discovers the MCP server's capabilities, invokes its tools, retrieves relevant passages from its resource, and bases its response on those passages.
 
 ## Week 7: Long-term memory
 
@@ -240,6 +271,9 @@ The system can detect an insufficient result and revise its plan.
 - Tracing and structured logs
 - Measuring cost, latency, and token usage
 - Prompt-injection and unsafe-action defenses
+- MCP capability and tool-selection tests
+- Treating MCP tool and resource output as untrusted input
+- Simulating server failures, malformed results, and timeouts
 
 ### Build
 
@@ -251,12 +285,14 @@ Create at least 20 representative test cases and measure:
 - Invalid arguments
 - Number of steps
 - Cost and execution time
+- MCP discovery and invocation success
+- Safe behavior when an MCP server is unavailable or malicious
 
 ### Completion checkpoint
 
 You can change a prompt or model and use evidence to determine whether the system improved.
 
-## Week 10: Agent framework or SDK
+## Week 10: Agent framework, SDK, and production MCP
 
 ### Learn
 
@@ -269,14 +305,34 @@ Evaluate a framework based on its support for:
 - Human approval
 - Evaluations
 - Deployment
+- MCP client support and server lifecycle management
+
+Also learn:
+
+- Connecting to multiple MCP servers
+- Choosing between local and remote transports
+- Authentication, secrets, and least-privilege access
+- Namespacing or resolving tools with similar names
+- Timeouts, retries, reconnection, and partial availability
+- Approval gates for consequential MCP tools
+- Logging and tracing MCP discovery, calls, and results
 
 ### Build
 
-Rebuild your existing agent with one framework or SDK. Preserve the evaluation suite so you can compare the implementations.
+Rebuild your existing agent with one framework or SDK and connect it to at least two MCP servers. One must be your custom learning-progress server; the other can provide notes, files, search, or another bounded capability. Preserve the evaluation suite so you can compare implementations.
+
+The target architecture is:
+
+```text
+Research agent (MCP host/client)
+├── Notes or documents MCP server
+├── Search or reference MCP server
+└── Custom learning-progress MCP server
+```
 
 ### Completion checkpoint
 
-You understand which parts are provided by the framework and which parts remain your application logic.
+You understand which parts are provided by the framework, MCP, and your application logic. The agent can discover and use multiple servers and degrade safely when one is unavailable.
 
 ## Week 11: Multi-agent patterns
 
@@ -316,6 +372,8 @@ You can explain why each role needs to be a separate agent rather than a functio
 - Secrets management
 - Monitoring and audit logs
 - User permissions and approval interfaces
+- Deploying or connecting to a remote MCP server securely
+- Monitoring MCP server availability, latency, and tool failures
 
 ### Build
 
@@ -354,9 +412,12 @@ At the end of the plan, you should be able to:
 
 - Design an agent from first principles
 - Implement a controlled model-tool loop
+- Build and test a custom MCP server with tools and resources
+- Connect an agent to local and remote MCP servers as an MCP client
+- Discover capabilities and select tools across multiple MCP servers
+- Secure, evaluate, and monitor MCP interactions
 - Choose between a workflow, a single agent, and multiple agents
 - Manage context, retrieval, and long-term memory separately
 - Build safety and approval boundaries
 - Evaluate reliability, cost, and latency
 - Deploy and monitor an agent for real users
-
