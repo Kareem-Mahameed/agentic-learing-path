@@ -1,5 +1,12 @@
 # Agentic Development Learning Plan
 
+## Start the tutorial
+
+This repository includes a self-guided tutorial for learners who want to follow
+the plan without an AI coding assistant.
+
+**[Start with the tutorial home page](tutorial/README.md)**
+
 ## Goal
 
 Over 12 weeks, build and deploy a reliable AI research and task assistant that can:
