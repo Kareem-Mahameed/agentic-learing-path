@@ -93,10 +93,22 @@ def format_task(task: dict[str,object]) -> str:
 def is_valid_title(title) -> bool:
     return bool(title.strip() != "")
 
+def get_next_tax_id(tasks: list[dict[str, object]]) -> int:
+    next_id = 1
+    for task in tasks:
+        if isinstance(task["id"], int) and task["id"] >= next_id:
+            next_id = task["id"] + 1
+    return next_id
+    # if len(tasks) == 0:
+    #     return 1
+    # else:
+    #     return max(task["id"] for task in tasks) + 1
+
+
 def add_task(tasks:list[dict[str,object]], title:str) -> bool:
     title = title.strip()
     if is_valid_title(title):
-        task = {"id":len(tasks) +1, "title":title, "completed":False }
+        task = {"id":get_next_tax_id(tasks), "title":title, "completed":False }
         tasks.append(task)
         return True
     else:
@@ -131,59 +143,94 @@ def remove_task(
             return True
     return False
 
+def run_menu(tasks: list[dict[str, object]]) -> None:
+    while True:
+        print("\nTask Manager " \
+        "\n1. Add task " \
+        "\n2. List tasks " \
+        "\n3. Complete task " \
+        "\n4. Remove task " \
+        "\n5. Exit ")
+
+        choice = input("Choose an option:").strip()
+        if choice == "1":
+            title = input("Enter a task title:")
+            if add_task(tasks,title):
+                print("Task added.")
+            else:
+                print("Task title is required.")
+        elif choice == "2":
+            list_tasks(tasks)
+        elif choice == "3":
+            task_id_text = input("Enter task id:").strip()
+            task_id = int(task_id_text) if task_id_text.isdigit() else -1
+            if complete_task(tasks,task_id):
+                print("Task completed.")
+            else:
+                print("Task not found.")
+        elif choice == "4":
+            task_id_text = input("Enter task id:").strip()
+            task_id = int(task_id_text) if task_id_text.isdigit() else -1
+            if remove_task(tasks,task_id):
+                print("Task removed.")
+            else:
+                print("Task not found.")
+        elif choice == "5":
+            print("Good by.")
+            return
+        else:
+            print("Invalid option. Choose a number from 1 to 5.")
+
+
 
 def main() -> None:
     print("Task manager starting")
 
     tasks: list[dict[str, object]] = []
+    run_menu(tasks)
 
-    print("1. Empty collection:")
-    list_tasks(tasks)
-
-    print("\n2. Invalid title:")
-    result = add_task(tasks, "   ")
-    assert result is False
-    assert tasks == []
-
-    print("\n3. Add valid tasks:")
-    assert add_task(tasks, "Learn Python") is True
-    assert add_task(tasks, "Build task manager") is True
-
-    assert len(tasks) == 2
-
-    assert tasks[0]["id"] == 1
-    assert tasks[0]["title"] == "Learn Python"
-    assert tasks[0]["completed"] is False
-
-    assert tasks[1]["id"] == 2
-    assert tasks[1]["title"] == "Build task manager"
-    assert tasks[1]["completed"] is False
-
-    print("\n4. Task list:")
-    list_tasks(tasks)
-
-    print("\n5. Complete list:")
-    print(f"Complete non existing task, taskId:5, result: {complete_task(tasks,5)}")
-    print(f"Complete  existing task, taskId:2, result: {complete_task(tasks,2)}")
-    print(f"Complete  existing task, taskId:2, result: {complete_task(tasks,2)}")
-    list_tasks(tasks)
-
-    print("\n6. Remove list:")
-    print(f"Remove non existing task, taskId:5, result: {remove_task(tasks,5)}")
-    print(f"Remove  existing task, taskId:2, result: {remove_task(tasks,2)}")
-    print(f"Remove  existing task second time, taskId:2, result: {remove_task(tasks,2)}")
-    list_tasks(tasks)
-
-
-    print("\nAll assertions passed!")
-
-
-    # tasks:list[dict[str,object]] = []
+    # print("1. Empty collection:")
     # list_tasks(tasks)
-    # print(add_task(tasks, " "))
-    # print(add_task(tasks, "Learn Python"))
-    # print(add_task(tasks, "Build task manager"))
+
+    # print("\n2. Invalid title:")
+    # result = add_task(tasks, "   ")
+    # assert result is False
+    # assert tasks == []
+
+    # print("\n3. Add valid tasks:")
+    # assert add_task(tasks, "Learn Python") is True
+    # assert add_task(tasks, "Build task manager") is True
+
+    # assert len(tasks) == 2
+
+    # assert tasks[0]["id"] == 1
+    # assert tasks[0]["title"] == "Learn Python"
+    # assert tasks[0]["completed"] is False
+
+    # assert tasks[1]["id"] == 2
+    # assert tasks[1]["title"] == "Build task manager"
+    # assert tasks[1]["completed"] is False
+
+    # print("\n4. Task list:")
     # list_tasks(tasks)
+
+    # print("\n5. Complete list:")
+    # print(f"Complete non existing task, taskId:5, result: {complete_task(tasks,5)}")
+    # print(f"Complete  existing task, taskId:2, result: {complete_task(tasks,2)}")
+    # print(f"Complete  existing task, taskId:2, result: {complete_task(tasks,2)}")
+    # list_tasks(tasks)
+
+    # print("\n6. Remove list:")
+    # print(f"Remove non existing task, taskId:5, result: {remove_task(tasks,5)}")
+    # print(f"Remove  existing task, taskId:2, result: {remove_task(tasks,2)}")
+    # print(f"Remove  existing task second time, taskId:2, result: {remove_task(tasks,2)}")
+    # list_tasks(tasks)
+
+
+    # print("\nAll assertions passed!")
+
+
+
 
 
 if __name__ == "__main__":

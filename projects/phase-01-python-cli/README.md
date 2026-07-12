@@ -687,9 +687,129 @@ core operations should be covered by automated tests. Simulating repeated
 optional extension for this phase; prioritize small tests of the task
 operations first.
 
+### Optional: Simulating menu input with `monkeypatch`
+
+An interactive menu normally pauses at every `input()` call. pytest's built-in
+`monkeypatch` fixture can temporarily replace `input()` with a predictable
+function, allowing a test to simulate a user without stopping for keyboard
+input. pytest automatically restores the real function after the test.
+
+To test a single Exit response:
+
+```python
+from agentic_assistant.task_manager import run_menu
+
+
+def test_menu_exit(monkeypatch, capsys) -> None:
+    tasks: list[dict[str, object]] = []
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt="": "5",
+    )
+
+    run_menu(tasks)
+    captured = capsys.readouterr()
+
+    assert "Good" in captured.out
+    assert tasks == []
+```
+
+The replacement lambda accepts `prompt` because application code calls
+`input("Choose an option: ")`. It returns the string `"5"` because real
+`input()` always returns a string.
+
+#### Supplying repeated responses
+
+Use an iterator when a workflow requires several calls to `input()`:
+
+```python
+def test_menu_adds_and_lists_task(monkeypatch, capsys) -> None:
+    tasks: list[dict[str, object]] = []
+    responses = iter([
+        "1",             # Select Add
+        "Learn Python",  # Enter the title
+        "2",             # Select List
+        "5",             # Exit
+    ])
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt="": next(responses),
+    )
+
+    run_menu(tasks)
+    captured = capsys.readouterr()
+
+    assert len(tasks) == 1
+    assert tasks[0]["title"] == "Learn Python"
+    assert tasks[0]["completed"] is False
+    assert "Task added." in captured.out
+    assert "[ ] 1: Learn Python" in captured.out
+```
+
+Each call to `next(responses)` returns the next prepared value. The order must
+match the menu's control flow:
+
+```text
+First input()  → "1"
+Second input() → "Learn Python"
+Third input()  → "2"
+Fourth input() → "5"
+```
+
+The final Exit response is important because it allows the menu loop to return.
+
+#### Testing recovery after invalid input
+
+Provide both the invalid response and a later Exit response:
+
+```python
+def test_menu_recovers_from_invalid_option(monkeypatch, capsys) -> None:
+    tasks: list[dict[str, object]] = []
+    responses = iter([
+        "9",  # Invalid option
+        "5",  # Exit after the menu repeats
+    ])
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt="": next(responses),
+    )
+
+    run_menu(tasks)
+    captured = capsys.readouterr()
+
+    assert "Invalid option" in captured.out
+    assert tasks == []
+```
+
+#### Understanding `StopIteration`
+
+`next(responses)` raises `StopIteration` when the iterator has no prepared
+values remaining. In a menu test, this usually means:
+
+- A response for an `input()` call is missing.
+- Responses are in the wrong order.
+- The final Exit option is missing.
+- The application requested input more times than expected.
+
+Trace the selected menu path and count every `input()` call. For example,
+choosing Add requires one response for the menu choice and another for the task
+title.
+
+The replacement lambda ignores the prompt instead of printing it, so input
+prompts are not present in `captured.out`. Messages written with `print()` are
+still captured. Prefer checking important output fragments rather than one
+large exact string for the entire session.
+
+Use these end-to-end menu tests sparingly. Direct tests of `add_task`,
+`complete_task`, `remove_task`, and other core functions remain faster and
+produce clearer failures.
+
 For additional details, see the official
 [pytest getting-started guide](https://docs.pytest.org/en/stable/getting-started.html)
-and [fixture reference](https://docs.pytest.org/en/stable/reference/fixtures.html).
+and [monkeypatch guide](https://docs.pytest.org/en/stable/how-to/monkeypatch.html).
 
 ## Implementation constraints
 
