@@ -503,4 +503,6 @@ manager.
 
 **Previous:** [← Repository and Python setup](01-repository-and-python-setup.md)
 
+**Next:** [Build and test the Phase 1 task manager →](03-building-and-testing-phase-01.md)
+
 **Tutorial home:** [Tutorial index](README.md)

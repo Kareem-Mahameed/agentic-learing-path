@@ -23,8 +23,9 @@ common problems.
 |---:|---|---|
 | 1 | [Repository and Python setup](01-repository-and-python-setup.md) | Prepare Git, Python, a virtual environment, and VS Code |
 | 2 | [45-minute Python orientation](02-python-orientation.md) | Learn enough Python syntax to begin the task manager |
+| 3 | [Build and test the Phase 1 task manager](03-building-and-testing-phase-01.md) | Build the CLI incrementally and validate it with pytest |
 
-More pages will be added as the phase projects progress.
+More pages will be added as later phase projects progress.
 
 ## Repository map
 
