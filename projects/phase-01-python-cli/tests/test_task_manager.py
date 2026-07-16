@@ -1,5 +1,5 @@
 import pytest
-from agentic_assistant.task_manager import (add_task, format_task, get_next_tax_id, is_valid_title, complete_task, list_tasks, remove_task, run_menu)
+from agentic_assistant.task_manager import (add_task, format_task, get_next_task_id, is_valid_title, complete_task, list_tasks, remove_task, run_menu)
 
 def test_add_task_rejects_whitespace_title() -> None:
     tasks = []
@@ -33,6 +33,16 @@ def test_complete_task_marks_task_as_completed() -> None:
     assert result is True
     assert tasks[0]["completed"] is True
     assert tasks[1]["completed"] is False
+    result = complete_task(tasks, 1)
+    assert result is True
+    assert tasks[0]["completed"] is True
+    assert tasks[1]["completed"] is False
+
+def test_complete_task_with_invalid_id() -> None:
+    tasks = [{"id": 1, "title": "Test Task", "completed": False}]
+    result = complete_task(tasks, 2)
+    assert result is False
+    assert tasks[0]["completed"] is False
 
 def test_format_task_returns_correct_string() -> None:
     task = {"id": 1, "title": "Test Task", "completed": False}
@@ -79,6 +89,15 @@ def test_remove_task_removes_task() -> None:
     assert len(tasks) == 1
     assert tasks[0]["id"] == 2
 
+    result = remove_task(tasks, 2)
+    assert result is True
+    assert len(tasks) == 0
+    result = remove_task(tasks, 2)
+    assert result is False
+
+    result = remove_task(tasks, "2dd")
+    assert result is False
+
 @pytest.mark.parametrize("title",["", "   ", "\n", "\t"])
 def test_is_valid_title_rejects_invalid_titles(title) -> None:
     assert is_valid_title(title) is False
@@ -100,6 +119,12 @@ def test_add_task_after_deleting_task() -> None:
     assert len(tasks) == 2
     assert tasks[1]["id"] == 3
     assert tasks[1]["title"] == "New Task"
+    remove_task(tasks, 3)
+    result = add_task(tasks, "New Task2")
+    assert result is True
+    assert len(tasks) == 2
+    assert tasks[1]["id"] == 3
+    assert tasks[1]["title"] == "New Task2"
 
 def test_menu_add_task_and_list(capsys, monkeypatch) -> None:
     tasks: list[dict[str, object]] = []
@@ -118,4 +143,23 @@ def test_menu_add_task_and_list(capsys, monkeypatch) -> None:
     assert "[ ] 1: Task 1" in captured.out
     assert "[ ] 2: Task 2" in captured.out
     assert "Task not found." in captured.out
-    assert "Good by." in captured.out
+    assert "Goodbye!" in captured.out
+
+
+def test_menu_recovers_from_invalid_option(capsys, monkeypatch) -> None:
+    tasks: list[dict[str, object]] = []
+    responses = iter([
+        "9",  # Invalid option
+        "5",  # Exit after the menu repeats
+    ])
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt="": next(responses),
+    )
+
+    run_menu(tasks)
+    captured = capsys.readouterr()
+
+    assert "Invalid option. Choose a number from 1 to 5." in captured.out
+    assert "Goodbye!" in captured.out
+    assert tasks == []

@@ -75,8 +75,8 @@
 
 
 # for task in tasks:
-#     formated = format_task(task)
-#     print(formated)
+#     formatted = format_task(task)
+#     print(formatted)
 
 # "Learn Python"
 # ""
@@ -88,12 +88,12 @@
 
 def format_task(task: dict[str,object]) -> str:
     marker = "x" if task["completed"] else " "
-    return str(f'[{marker}] {task["id"]}: {task["title"]}')
+    return f'[{marker}] {task["id"]}: {task["title"]}'
 
-def is_valid_title(title) -> bool:
+def is_valid_title(title: str) -> bool:
     return bool(title.strip() != "")
 
-def get_next_tax_id(tasks: list[dict[str, object]]) -> int:
+def get_next_task_id(tasks: list[dict[str, object]]) -> int:
     next_id = 1
     for task in tasks:
         if isinstance(task["id"], int) and task["id"] >= next_id:
@@ -108,7 +108,7 @@ def get_next_tax_id(tasks: list[dict[str, object]]) -> int:
 def add_task(tasks:list[dict[str,object]], title:str) -> bool:
     title = title.strip()
     if is_valid_title(title):
-        task = {"id":get_next_tax_id(tasks), "title":title, "completed":False }
+        task = {"id":get_next_task_id(tasks), "title":title, "completed":False }
         tasks.append(task)
         return True
     else:
@@ -120,8 +120,8 @@ def list_tasks(tasks:list[dict[str,object]]) -> None:
         print("No tasks found.")
     else:
         for task in tasks:
-            formated = format_task(task)
-            print(formated)
+            formatted = format_task(task)
+            print(formatted)
 
 def complete_task(
     tasks: list[dict[str, object]],
@@ -176,7 +176,7 @@ def run_menu(tasks: list[dict[str, object]]) -> None:
             else:
                 print("Task not found.")
         elif choice == "5":
-            print("Good by.")
+            print("Goodbye!")
             return
         else:
             print("Invalid option. Choose a number from 1 to 5.")
